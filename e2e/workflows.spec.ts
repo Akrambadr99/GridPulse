@@ -19,3 +19,6 @@ test('Topology graph evidence 2',async({page})=>{await page.goto('/grid/topology
 
 
 test('Restoration control restores and recovers domain state',async({page})=>{await page.goto('/grid/topology/SS-NORTH/restoration?at=2026-09-18T10:00&focus=SW-12');await expect(page.getByRole('heading',{name:"Topology restoration control",exact:true})).toBeVisible();await page.getByLabel('Authority').selectOption("control approver");await page.getByRole('button',{name:'Run domain bulk action'}).click();await expect(page.getByRole('status')).toContainText('1 succeeded; 1 require recovery');await expect(page.getByRole('button',{name:'Retry failed records'})).toBeVisible()});
+
+
+test('Dispatch lab restores a feasible decision',async({page})=>{await page.goto('/grid/topology/SS-NORTH/dispatch/PEAK?mw=28');await expect(page.getByRole('heading',{name:"Battery dispatch and curtailment lab",exact:true})).toBeVisible();await expect(page.getByRole('region',{name:'Scenario result'})).toContainText(/Feasible|Blocked/);await expect(page.getByText("state of charge",{exact:false}).first()).toBeVisible()});
