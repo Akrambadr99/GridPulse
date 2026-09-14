@@ -1,0 +1,4 @@
+export interface ScenarioResult{primary:number;secondary:number;blocked:boolean;explanation:string;affected:readonly string[]}
+export function evaluateScenario(mw:number){if(!Number.isFinite(mw)||mw<0)throw new Error('Dispatch must be non-negative.');const soc=34,reserve=12,usable=soc-reserve,feederHeadroom=25,secure=Math.min(mw,usable,feederHeadroom);return{primary:secure,secondary:Math.max(0,mw-secure),blocked:mw>secure,explanation:mw>feederHeadroom?'Feeder F-12 thermal headroom exceeded':mw>usable?'Battery reserve floor would be breached':'N-1 dispatch is secure',affected:['BAT-3','FD-44',mw>20?'SOLAR-9':'SW-12']}}
+export function mayCommit(role:string){return role==="control approver"}
+export function appendDecision(history:readonly string[],role:string,result:ScenarioResult){if(!mayCommit(role))return history;return[...history,"Commit dispatch interval"+': '+result.explanation]}
