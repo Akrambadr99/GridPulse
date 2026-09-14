@@ -16,3 +16,6 @@ test('retains keyboard-visible product navigation',async({page})=>{await page.go
 test('Topology graph deep workflow',async({page})=>{await page.goto('/grid/topology/SS-NORTH');await expect(page.getByRole('heading',{name:'Topology-aware operations graph',exact:true})).toBeVisible();await expect(page.getByText('Substation SS-NORTH',{exact:false}).first()).toBeVisible()});
 test('Topology graph evidence 1',async({page})=>{await page.goto('/grid/topology/SS-NORTH');await expect(page.getByText('Feeder F-12',{exact:false}).first()).toBeVisible()});
 test('Topology graph evidence 2',async({page})=>{await page.goto('/grid/topology/SS-NORTH');await expect(page.getByText('N-1 secure',{exact:false}).first()).toBeVisible()});
+
+
+test('Restoration control restores and recovers domain state',async({page})=>{await page.goto('/grid/topology/SS-NORTH/restoration?at=2026-09-18T10:00&focus=SW-12');await expect(page.getByRole('heading',{name:"Topology restoration control",exact:true})).toBeVisible();await page.getByLabel('Authority').selectOption("control approver");await page.getByRole('button',{name:'Run domain bulk action'}).click();await expect(page.getByRole('status')).toContainText('1 succeeded; 1 require recovery');await expect(page.getByRole('button',{name:'Retry failed records'})).toBeVisible()});
