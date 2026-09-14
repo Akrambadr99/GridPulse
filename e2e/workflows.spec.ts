@@ -1,0 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
+import{expect,test}from'@playwright/test';
+test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.clear())});
+test('opens the command center',async({page})=>{await page.goto('/');await expect(page.getByRole('heading',{name:"GridPulse command center"})).toBeVisible()});
+test('navigates to the connected operations workspace',async({page})=>{await page.goto('/');await page.getByRole('link',{name:'Operations'}).click();await expect(page.getByText(/LIVE WORKSPACE/)).toBeVisible()});
+test('renders derived analytics',async({page})=>{await page.goto('/analytics');await expect(page.getByRole('heading',{name:'Operational analytics'})).toBeVisible()});
+test("Operating reserve dispatch route is operational",async({page})=>{await page.goto('/reserve-dispatch');await expect(page.getByRole('heading',{name:"Operating reserve dispatch"})).toBeVisible();await expect(page.getByText(/revision 1/).first()).toBeVisible()})
+test("Renewable curtailment route is operational",async({page})=>{await page.goto('/renewable-curtailment');await expect(page.getByRole('heading',{name:"Renewable curtailment"})).toBeVisible();await expect(page.getByText(/revision 1/).first()).toBeVisible()})
+test("Switching order execution route is operational",async({page})=>{await page.goto('/switching-order');await expect(page.getByRole('heading',{name:"Switching order execution"})).toBeVisible();await expect(page.getByText(/revision 1/).first()).toBeVisible()})
+test("Planned outage windows route is operational",async({page})=>{await page.goto('/outage-window');await expect(page.getByRole('heading',{name:"Planned outage windows"})).toBeVisible();await expect(page.getByText(/revision 1/).first()).toBeVisible()})
+test("Protection setting governance route is operational",async({page})=>{await page.goto('/protection-setting');await expect(page.getByRole('heading',{name:"Protection setting governance"})).toBeVisible();await expect(page.getByText(/revision 1/).first()).toBeVisible()})
+test("Field crew clearance route is operational",async({page})=>{await page.goto('/crew-clearance');await expect(page.getByRole('heading',{name:"Field crew clearance"})).toBeVisible();await expect(page.getByText(/revision 1/).first()).toBeVisible()})
+test("Telemetry freshness route is operational",async({page})=>{await page.goto('/telemetry-quality');await expect(page.getByRole('heading',{name:"Telemetry freshness"})).toBeVisible();await expect(page.getByText(/revision 1/).first()).toBeVisible()})
+test("Feeder restoration capacity route is operational",async({page})=>{await page.goto('/feeder-restoration');await expect(page.getByRole('heading',{name:"Feeder restoration capacity"})).toBeVisible();await expect(page.getByText(/revision 1/).first()).toBeVisible()})
+test('retains keyboard-visible product navigation',async({page})=>{await page.goto('/');await page.keyboard.press('Tab');await expect(page.locator(':focus')).toBeVisible()});
