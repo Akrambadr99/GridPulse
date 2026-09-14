@@ -1,0 +1,2 @@
+export type Adjacency=Readonly<Record<string,readonly string[]>>
+export function safeIsolation(graph:Adjacency,start:string,blocked:readonly string[]=[]){if(!(start in graph))throw new Error('Unknown Breaker isolation start node.');const seen=new Set<string>(),queue=[start];while(queue.length){const node=queue.shift();if(!node||seen.has(node)||blocked.includes(node))continue;seen.add(node);for(const next of graph[node]??[])if(!seen.has(next))queue.push(next)}return[...seen]}
