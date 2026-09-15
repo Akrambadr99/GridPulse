@@ -1,0 +1,5 @@
+export interface OperationalNode{id:string;label:string;capacity:number;demand:number;dependsOn:string[];effectiveFrom:string;effectiveTo:string;version:number}
+export const operationalNodes:OperationalNode[]=[{"id":"GP-330","label":"Northbank F12","capacity":12,"demand":7,"dependsOn":[],"effectiveFrom":"2026-09-01","effectiveTo":"2026-12-31","version":2},{"id":"GP-337","label":"Harbor B tie","capacity":10,"demand":8,"dependsOn":["GP-330"],"effectiveFrom":"2026-09-01","effectiveTo":"2026-09-20","version":3},{"id":"GP-342","label":"Willow battery","capacity":14,"demand":11,"dependsOn":["GP-337"],"effectiveFrom":"2026-09-18","effectiveTo":"2026-12-31","version":4},{"id":"GP-349","label":"Ridge bus","capacity":9,"demand":5,"dependsOn":["GP-330"],"effectiveFrom":"2026-09-01","effectiveTo":"2026-12-31","version":5}];
+export const scenarioModes=["N-1 secure","Storm recovery","Peak reserve"] as const;
+export const metricLabels=["Restored MW","Reserve margin","Constrained feeders"] as const;
+export const domainCoefficient=4.8;export const secondaryWeight=22;export const riskWeight=6;
