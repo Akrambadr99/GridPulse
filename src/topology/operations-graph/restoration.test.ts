@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { energizedNodes, gridEdges, restorationFindings } from './restoration'
+import { energizedNodes, gridEdges, restorationFindings, restorationSequence } from './restoration'
 
 describe('topology restoration', () => {
   it('reaches the district but not the isolated hospital', () => {
@@ -19,4 +19,17 @@ describe('topology restoration', () => {
     const plan = gridEdges.map(edge => edge.id === 'SW-2' ? { ...edge, closed: true, capacityMw: 5 } : edge)
     expect(restorationFindings(plan)).toContain('SW-2 exceeds its transfer capacity.')
   })
+})
+
+describe('restoration sequencing compatibility', () => {
+  it('selects the first incomplete step', () => expect(restorationSequence([
+    { id: 'a', order: 1, complete: true }, { id: 'b', order: 2, complete: false },
+  ])?.id).toBe('b'))
+  it('skips blocked steps', () => expect(restorationSequence([
+    { id: 'a', order: 1, complete: false, blocked: true }, { id: 'b', order: 2, complete: false },
+  ])?.id).toBe('b'))
+  it('returns undefined when complete', () => expect(restorationSequence([{ id: 'a', order: 1, complete: true }])).toBeUndefined())
+  it('rejects duplicate order', () => expect(() => restorationSequence([
+    { id: 'a', order: 1, complete: false }, { id: 'b', order: 1, complete: false },
+  ])).toThrow())
 })
