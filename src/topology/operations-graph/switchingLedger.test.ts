@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { MemoryStorage } from '../../data/memory-storage'
-import { changeSwitch, commitDispatch, dispatchBlockers, readSwitchingPlan, saveSwitchingPlan } from './switchingLedger'
+import { cancelDispatch, changeSwitch, commitDispatch, commitDispatchAtRevision, dispatchBlockers, evaluateDispatchRevision, readSwitchingPlan, saveSwitchingPlan } from './switchingLedger'
 describe('durable switching and dispatch', () => {
   it('persists a switch transition that changes dispatch eligibility', () => {
     const storage = new MemoryStorage()
@@ -15,5 +15,15 @@ describe('durable switching and dispatch', () => {
     expect(committed.history.map(item => item.action)).toEqual(['switch-position', 'dispatch-committed'])
     expect(() => changeSwitch(committed, 'SW-2')).toThrow(/depends/)
     expect(readSwitchingPlan(storage).dispatchMw).toBe(8)
+  })
+  it('reports reviewed-topology conflicts and permits cancellation before a new switch plan', () => {
+    const reviewed = readSwitchingPlan(new MemoryStorage())
+    const changed = changeSwitch(reviewed, 'SW-2')
+    expect(evaluateDispatchRevision(changed, reviewed.revision)).toMatchObject({ allowed: false, resolutionOptions: ['Review current topology'] })
+    expect(() => commitDispatchAtRevision(changed, 8, reviewed.revision)).toThrow(/Topology changed/)
+    const committed = commitDispatchAtRevision(changed, 8, changed.revision)
+    const cancelled = cancelDispatch(committed, 'Operator cancelled the dispatch interval.')
+    expect(cancelled.dispatchMw).toBeNull()
+    expect(changeSwitch(cancelled, 'SW-2').revision).toBe(cancelled.revision + 1)
   })
 })

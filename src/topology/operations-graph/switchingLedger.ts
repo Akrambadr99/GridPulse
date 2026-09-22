@@ -23,6 +23,11 @@ export function readSwitchingPlan(storage: StoragePort): SwitchingPlan {
 export function dispatchBlockers(plan: SwitchingPlan): string[] {
   return restorationFindings(plan.edges)
 }
+export function evaluateDispatchRevision(plan: SwitchingPlan, expectedRevision: number): { allowed: boolean; conflicts: string[]; resolutionOptions: string[] } {
+  const conflicts = expectedRevision === plan.revision ? [] :
+    [`Topology changed from revision ${String(expectedRevision)} to ${String(plan.revision)}; review the current switch plan.`]
+  return { allowed: conflicts.length === 0, conflicts, resolutionOptions: conflicts.length ? ['Review current topology'] : [] }
+}
 export function changeSwitch(plan: SwitchingPlan, id: string): SwitchingPlan {
   if (plan.dispatchMw !== null) throw new Error('Committed dispatch depends on the switching plan.')
   if (!plan.edges.some(edge => edge.id === id)) throw new Error('Switch was not found.')
@@ -37,6 +42,18 @@ export function commitDispatch(plan: SwitchingPlan, mw: number): SwitchingPlan {
   if (plan.dispatchMw !== null) throw new Error('Dispatch interval is already committed.')
   const revision = plan.revision + 1
   return { ...plan, dispatchMw: mw, revision, history: [...plan.history, { revision, action: 'dispatch-committed', affected: 'F-12' }] }
+}
+export function commitDispatchAtRevision(plan: SwitchingPlan, mw: number, expectedRevision: number): SwitchingPlan {
+  const decision = evaluateDispatchRevision(plan, expectedRevision)
+  if (!decision.allowed) throw new Error(decision.conflicts[0])
+  return commitDispatch(plan, mw)
+}
+export function cancelDispatch(plan: SwitchingPlan, reason: string): SwitchingPlan {
+  if (plan.dispatchMw === null) throw new Error('No committed dispatch exists.')
+  if (reason.trim().length < 12) throw new Error('Explain why dispatch is cancelled.')
+  const revision = plan.revision + 1
+  return { ...plan, revision, dispatchMw: null, history: [...plan.history,
+    { revision, action: 'dispatch-cancelled', affected: reason }] }
 }
 export function saveSwitchingPlan(storage: StoragePort, plan: SwitchingPlan): SwitchingPlan {
   storage.setItem(key, JSON.stringify(plan))
