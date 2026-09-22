@@ -15,6 +15,7 @@ export interface DispatchRequest {
   sourceRevision: number
   requestedBy: string
   assignee: string
+  assigneeId?: string | null
   status: 'open' | 'stale' | 'completed' | 'cancelled' | 'superseded'
   supersedesId?: string
   mw: number
@@ -43,7 +44,7 @@ export function requestDispatch(plan: SwitchingPlan, mw: number, actor = 'switch
   const revision = plan.revision + 1
   const old = [...(plan.dispatchRequests ?? [])].reverse().find(item => item.status === 'stale')
   const request: DispatchRequest = { id: `DISPATCH-${String(revision)}`, sourceRevision: revision, requestedBy: actor, assignee,
-    status: 'open', mw, ...(old ? { supersedesId: old.id } : {}) }
+    assigneeId: null, status: 'open', mw, ...(old ? { supersedesId: old.id } : {}) }
   return { ...plan, revision, dispatchRequests: [...(plan.dispatchRequests ?? []).map(item => item.id === old?.id ?
     { ...item, status: 'superseded' as const } : item), request],
     history: [...plan.history, { revision, action: 'dispatch-requested', affected: 'F-12' }] }
@@ -87,12 +88,13 @@ export function commitDispatch(plan: SwitchingPlan, mw: number): SwitchingPlan {
   const revision = plan.revision + 1
   return { ...plan, dispatchMw: mw, revision, history: [...plan.history, { revision, action: 'dispatch-committed', affected: 'F-12' }] }
 }
-export function commitDispatchAtRevision(plan: SwitchingPlan, mw: number, expectedRevision: number, actor: string): SwitchingPlan {
+export function commitDispatchAtRevision(plan: SwitchingPlan, mw: number, expectedRevision: number, actor: string, controllerId?: string): SwitchingPlan {
   const decision = dispatchApprovalPolicy(plan, actor, expectedRevision)
   if (!decision.allowed) throw new Error(decision.blockers[0])
   if (plan.dispatchRequests?.length) {
     const request = controlInbox(plan, actor).find(item => item.sourceRevision === expectedRevision && item.mw === mw)
     if (!request) throw new Error('A current dispatch request must be assigned to this approver.')
+    if (request.assigneeId && request.assigneeId !== controllerId) throw new Error('Dispatch request belongs to another named controller.')
     const committed = commitDispatch(plan, mw)
     return { ...committed, dispatchRequests: plan.dispatchRequests.map(item => item.id === request.id ?
       { ...item, status: 'completed' as const } : item) }
