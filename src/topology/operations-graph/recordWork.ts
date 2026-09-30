@@ -1,10 +1,10 @@
-import type { StoragePort } from '../../workspace/repository'
+import type { StorageReader } from '../../platform/storage-port'
 import { readFeederCollection } from './feederCollection'
 
-export function activeRecordWork(storage: StoragePort) {
+export function activeRecordWork(storage: StorageReader) {
   return readFeederCollection(storage).feeders.filter(item => !item.archived).map(item => ({ feederId: item.id, plan: item.plan }))
 }
-export function selectedRecordWork(storage: StoragePort, id: string) {
+export function selectedRecordWork(storage: StorageReader, id: string) {
   const record = activeRecordWork(storage).find(item => item.feederId === id)
   if (!record) throw new Error('Active record not found.')
   return record

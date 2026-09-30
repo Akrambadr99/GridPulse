@@ -1,4 +1,4 @@
-import type { StoragePort } from '../../workspace/repository'
+import type { StoragePort, StorageReader } from '../../platform/storage-port'
 import { readStored, writeStored } from '../../workspace/storageValidation'
 import { feederCollectionRule } from './collectionValidation'
 import { changeSwitch, initialSwitchingPlan, readSwitchingPlan, requestDispatch } from './switchingLedger'
@@ -32,7 +32,7 @@ export function seedFeederCollection(legacy: SwitchingPlan = initialSwitchingPla
     { id: 'OUT-SOUTH', revision: 1, feederIds: ['F-21', 'F-22', 'F-23'] },
   ], audit: [] }
 }
-export function readFeederCollection(storage: StoragePort): FeederCollection {
+export function readFeederCollection(storage: StorageReader): FeederCollection {
   return readStored(storage, key, feederCollectionRule, () => seedFeederCollection(readSwitchingPlan(storage)),
     'gridpulse:switching-plan:v1')
 }

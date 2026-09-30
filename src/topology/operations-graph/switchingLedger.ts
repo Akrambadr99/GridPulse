@@ -1,4 +1,4 @@
-import type { StoragePort } from '../../workspace/repository'
+import type { StoragePort, StorageReader } from '../../platform/storage-port'
 import { gridEdges, restorationFindings } from './restoration'
 import type { GridEdge } from './restoration'
 
@@ -22,7 +22,7 @@ export interface DispatchRequest {
 }
 const key = 'gridpulse:switching-plan:v1'
 export const initialSwitchingPlan: SwitchingPlan = { edges: gridEdges, dispatchMw: null, switchOwner: 'switching author', dispatchRequests: [], revision: 0, history: [] }
-export function readSwitchingPlan(storage: StoragePort): SwitchingPlan {
+export function readSwitchingPlan(storage: StorageReader): SwitchingPlan {
   const raw = storage.getItem(key)
   if (!raw) return initialSwitchingPlan
   const value: unknown = JSON.parse(raw)
