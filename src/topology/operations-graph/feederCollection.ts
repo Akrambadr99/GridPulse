@@ -1,4 +1,6 @@
 import type { StoragePort } from '../../workspace/repository'
+import { readStored, writeStored } from '../../workspace/storageValidation'
+import { feederCollectionRule } from './collectionValidation'
 import { changeSwitch, initialSwitchingPlan, readSwitchingPlan, requestDispatch } from './switchingLedger'
 import type { SwitchingPlan } from './switchingLedger'
 import { claimControlRequest, controlWorkInbox, directAssignCritical } from './controlWorkload'
@@ -31,15 +33,12 @@ export function seedFeederCollection(legacy: SwitchingPlan = initialSwitchingPla
   ], audit: [] }
 }
 export function readFeederCollection(storage: StoragePort): FeederCollection {
-  const raw = storage.getItem(key)
-  if (!raw) return seedFeederCollection(readSwitchingPlan(storage))
-  const value: unknown = JSON.parse(raw)
-  if (!value || typeof value !== 'object' || !('feeders' in value) || !Array.isArray(value.feeders) ||
-    !('groups' in value) || !Array.isArray(value.groups) || !('audit' in value) || !Array.isArray(value.audit))
-    throw new Error('Invalid feeder collection.')
-  return value as FeederCollection
+  return readStored(storage, key, feederCollectionRule, () => seedFeederCollection(readSwitchingPlan(storage)),
+    'gridpulse:switching-plan:v1')
 }
-export function saveFeederCollection(storage: StoragePort, value: FeederCollection): FeederCollection { storage.setItem(key, JSON.stringify(value)); return value }
+export function saveFeederCollection(storage: StoragePort, value: FeederCollection): FeederCollection {
+  return writeStored(storage, key, feederCollectionRule, value)
+}
 export function feederById(value: FeederCollection, id: string): FeederRecord {
   const record = value.feeders.find(item => item.id === id)
   if (!record) throw new Error(`Feeder ${id} was not found.`)

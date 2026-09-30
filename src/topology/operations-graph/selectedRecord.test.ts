@@ -83,7 +83,7 @@ describe('selected feeder persistence', () => {
     const storage = new MemoryStorage(), bound = openSelectedRecord(storage)
     const changed = edit(readSwitchingPlan(bound))
     storage.fail = true
-    expect(() => saveSwitchingPlan(bound, changed)).toThrow('Storage full')
+    expect(() => saveSwitchingPlan(bound, changed)).toThrow('Browser storage rejected the save')
     storage.fail = false
     saveSwitchingPlan(bound, changed)
     expect(readSwitchingPlan(openSelectedRecord(storage))).toEqual(changed)
